@@ -4,7 +4,7 @@
   "description": "Global cache for hypercore blocks",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard && brittle test.js --coverage"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,9 @@
   "dependencies": {
     "hypercore-crypto": "^3.4.2",
     "hypercore-id-encoding": "^1.3.0"
+  },
+  "devDependencies": {
+    "brittle": "^3.5.2",
+    "standard": "^17.1.0"
   }
 }
