@@ -1,15 +1,20 @@
-const GlobalCache = require('./index')
+const Rache = require('.')
 
-function main () {
-  const cache = new GlobalCache()
+const cache = new Rache({ maxSize: 3 })
+const cache2 = cache.sub()
+const cache3 = cache.sub()
 
-  for (let i = 0; i < 100_000; i++) {
-    cache.set(i, `value-${i}`)
-  }
+cache.set('key', 'value')
+cache2.set('key', 'otherValue')
+cache3.set('some', 'thing')
 
-  for (let i = 0; i < 100; i++) {
-    console.log('cache', i, cache.get(i))
-  }
-}
+// cache 1 is a separate cache from cache2 and cache3
+console.log('cached:', cache.get('key')) // 'value'
 
-main()
+// But they share the same global size
+console.log(cache.globalSize, 'of', cache.globalSize) // 3 of 3
+
+cache.set('key2', 'another value')
+// The cache was full, so one of the existing 3 entries got evicted
+
+console.log(cache.globalSize, 'of', cache.globalSize) // 3 of 3
