@@ -33,15 +33,15 @@ test('gc triggers when full and removes 1 entry', t => {
   t.is(nrMisses, 1, 'exactly 1 old item got removed from the cache')
 })
 
-test('subs share same cache, but no key confllicts', t => {
+test('subs share same cache, but no key conflicts', t => {
   const cache = new GlobalCache({ maxSize: 3 })
-  const sub1 = cache.sub('sub1')
-  const sub2 = cache.sub('sub2')
+  const sub1 = cache.sub()
+  const sub2 = cache.sub()
 
   sub1.set('key', 'value1')
   sub2.set('key', 'value2')
 
-  t.is(cache.size, 2, '2 entries')
+  t.is(cache.globalSize, 2, '2 entries')
   t.is(sub1.get('key'), 'value1', 'sub1 value')
   t.is(sub2.get('key'), 'value2', 'sub2 value')
 
@@ -65,16 +65,14 @@ test('internal structure remains consistent', t => {
 })
 
 function ensureConsistent (cache) {
-  if (cache.size > cache.maxSize || cache.size !== cache._array.length) throw new Error('size')
-
-  if (cache._array.length !== cache._map.size) throw new Error('array/map discrepancy')
+  if (cache.globalSize > cache.maxSize || cache.globalSize !== cache._array.length) throw new Error('size')
 
   for (const entry of cache._array) {
-    const mapEntry = cache._map.get(entry.key)
-    if (mapEntry !== entry) throw new Error('different entry obj in map/cache')
+    const mapEntry = entry.map.get(entry.key)
+    if (mapEntry.entry !== entry) throw new Error('different entry obj in map/cache')
   }
 
-  for (const entry of cache._map.values()) {
+  for (const { entry } of cache._map.values()) {
     const arrayEntry = cache._array[entry.index]
     if (arrayEntry !== entry) throw new Error('different entry obj in map/cache')
   }
