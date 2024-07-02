@@ -10,7 +10,6 @@ class Entry {
 class GlobalCache {
   constructor ({ maxSize = 65536, subName = '', parent = null } = {}) {
     this.maxSize = parent?.maxSize || maxSize
-    this.defaultGcProp = parent?.defaultGcProp || 0.1
     this.subName = subName
 
     this._array = parent?._array || []
@@ -52,17 +51,8 @@ class GlobalCache {
     return res?.fork === fork ? res.value : undefined
   }
 
-  _gc (prop) {
-    if (!prop) prop = this.defaultGcProp
-
-    const start = Math.round(this.size * (1 - prop))
-    const nrToDel = this.size - start
-    console.log('gcing', nrToDel, 'entries')
-
-    // TODO: more efficiently? (I think this naive approach is 'fast though' though)
-    for (let i = 0; i < nrToDel; i++) {
-      this._delete(Math.floor(Math.random() * this.size))
-    }
+  _gc () {
+    this._delete(Math.floor(Math.random() * this.size))
   }
 
   _delete (index) { // ~constant time
