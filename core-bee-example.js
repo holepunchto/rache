@@ -3,10 +3,12 @@ const idEnc = require('hypercore-id-encoding')
 const GlobalCache = require('.')
 
 async function main () {
+  // To verify there is no arbitrary memory growth, set many blocks and a large nrCores
+  // => 'Heap used' stays bound. Increasing maxSize increases the total heap usage
   const maxSize = 65536
   const globalCache = new GlobalCache({ maxSize })
-  const nrCores = 6
-  const nrBees = 8
+  const nrCores = 7
+  const nrBees = 7
   const nrBlocks = 5000
 
   const cores = []
@@ -27,17 +29,14 @@ async function main () {
   }
 
   console.log('fetching entries', getHeapMb())
-  let totalCacheMisses = 0
-  // Most recent, so all in cache
   for (let i = 0; i < nrBees; i++) {
     for (let j = 0; j < nrBlocks; j++) await bees[i].get(`entry-${j}`)
-    console.log('cache misses bee', i, bees[i].cacheMisses, getHeapMb())
-    totalCacheMisses += bees[i].cacheMisses
+    console.log('cache misses bee', i, ':', bees[i].cacheMisses, getHeapMb())
   }
 
   for (let i = 0; i < nrCores; i++) {
     for (let j = 0; j < nrBlocks; j++) await cores[i].get(j)
-    console.log('cache misses core', i, cores[i].cacheMisses, getHeapMb())
+    console.log('cache misses core', i, ':', cores[i].cacheMisses, getHeapMb())
   }
 
 }
@@ -52,10 +51,12 @@ class Hypercore {
     this.nextI = 0
     this.globalCache = globalCache.sub(`${idEnc.normalize(this.discoveryKey)}-core-`)
     this.cacheMisses = 0
+
+    this.fork = 0
   }
 
   async get (i) {
-    return this.globalCache.get(i) || await this._get(i)
+    return this.globalCache.get(i, this.fork) || await this._get(i)
   }
 
   async _get (i) {
@@ -64,26 +65,35 @@ class Hypercore {
     await new Promise(resolve => setTimeout(resolve, 1))
     const res = `value-${i}`
 
-    this.globalCache.set(i, res)
+    this.globalCache.set(i, this.fork, res)
     return res
   }
 
   append () {
     const i = this.nextI++
-    this.globalCache.set(i, `value-${i}`)
+    this.globalCache.set(i, this.fork, `value-${i}`)
   }
 }
 
 class Hyperbee {
+  // Note: very quick and dirty, not how hyperbee actually uses its caches
   constructor (core, globalCache) {
     this.discoveryKey = core.discoveryKey
     this.nextI = 0
-    this.globalCache = globalCache.sub(`${idEnc.normalize(this.discoveryKey)}-bee-`)
+    this.nodeCache = globalCache.sub(`${idEnc.normalize(this.discoveryKey)}-bee-node-`)
+    this.keyCache = globalCache.sub(`${idEnc.normalize(this.discoveryKey)}-bee-key-`)
+
     this.cacheMisses = 0
+
+    this.core = core
   }
 
   async get (i) {
-    return this.globalCache.get(i) || await this._get(i)
+    // Note: this is not at all how the hyperbee cache works
+    // (it would cache the nodes/keys corresponding to a certain index,
+    // but not the entries themselves).
+    // This serves only to illustrate how the same core can have multiple global-cache namespaces
+    return this.nodeCache.get(i, this.core.fork) || await this._get(i)
   }
 
   async _get (i) {
@@ -94,12 +104,14 @@ class Hyperbee {
 
     const res = { key: i, value: `value-${i}`, seq: i }
 
-    this.globalCache.set(i, res)
+    // Note: not at all how hyperbee caching works (see comment above for get (i))
+    // Note: we might set the same value multiple times if _get called in parallel with same i (but that's no big deal)
+    this.nodeCache.set(i, this.core.fork, res)
     return res
   }
 
   put (i) {
-    this.globalCache.set(i, { key: i, value: `value-${i}`, seq: this.nextI++ })
+    this.nodeCache.set(i, this.core.fork, { key: i, value: `value-${i}`, seq: this.nextI++ })
   }
 }
 

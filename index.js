@@ -1,16 +1,7 @@
-
-// Assumptions:
-// - Combination of discovery-key, index, and type (either 'core' or bee for now) is unique
-//    Note: 'core' and 'bee' are needed, because the same core can be accessed as both hypercore and hyperbee
-//      and there is no guarantee for the keys not to overlap in that case
-//    TODO: 99% sure the fork nr needs to be added to the unique name
-// - A value is always accessed using the same encoding
-//    await bee.set(key, { keyEncoding: 'utf-8 })
-//    await bee.get(key, { keyEncoding: 'binary' }) // This breaks, it will still return the cached utf-8
-
 class Entry {
-  constructor (key, value, index) {
+  constructor (key, fork, index, value) {
     this.key = key
+    this.fork = fork
     this.index = index
     this.value = value
   }
@@ -34,6 +25,33 @@ class GlobalCache {
     return new GlobalCache({ subName, parent: this })
   }
 
+  set (key, fork, value) { // ~constant time
+    key = `${this.subName}${key}`
+
+    const current = this._map.get(key)
+    if (current) {
+      // Auto updates the array entry too
+      current.value = value
+      current.fork = fork // Assumes we only ever care about one fork simulatenously
+    } else {
+      if (this.size >= this.maxSize) this._gc()
+
+      const entry = new Entry(key, fork, this._array.length, value)
+      this._array.push(entry)
+      this._map.set(key, entry)
+    }
+  }
+
+  get (key, fork) {
+    key = `${this.subName}${key}`
+    const res = this._map.get(key)
+
+    // We could explicitly gc the old fork, but upstream
+    // should take care of that (calling cache.set on a cache miss)
+    // (and if not, the cache will gc it at some point anyway)
+    return res?.fork === fork ? res.value : undefined
+  }
+
   _gc (prop) {
     if (!prop) prop = this.defaultGcProp
 
@@ -41,31 +59,10 @@ class GlobalCache {
     const nrToDel = this.size - start
     console.log('gcing', nrToDel, 'entries')
 
-    // TODO: more efficiently? (I think this naive approach is pretty fast though)
+    // TODO: more efficiently? (I think this naive approach is 'fast though' though)
     for (let i = 0; i < nrToDel; i++) {
       this._delete(Math.floor(Math.random() * this.size))
     }
-  }
-
-  set (key, value) { // ~constant time
-    key = `${this.subName}${key}`
-
-    const current = this._map.get(key)
-    if (current) {
-      // Auto updates the array entry too
-      current.value = value
-    } else {
-      if (this.size >= this.maxSize) this._gc()
-
-      const entry = new Entry(key, value, this._array.length)
-      this._array.push(entry)
-      this._map.set(key, entry)
-    }
-  }
-
-  get (key) {
-    key = `${this.subName}${key}`
-    return this._map.get(key)?.value
   }
 
   _delete (index) { // ~constant time
@@ -77,7 +74,7 @@ class GlobalCache {
     let key = lastEntry.key
     if (!isLast) {
       key = this._array[index].key
-      lastEntry.index = index
+      lastEntry.index = index // entry is shared between map and array, so updates in both
       this._array[index] = lastEntry
     }
 
