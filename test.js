@@ -53,6 +53,43 @@ test('subs share same cache, but no key conflicts', t => {
   t.is(nrMisses, 1, '1 entry got cleared from the global cache')
 })
 
+test('delete', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('what', 'ever')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever 2')
+
+  t.is(cache.globalSize, 4, 'sanity check')
+  t.is(cache.size, 2, 'sanity check')
+
+  {
+    const deleted = cache.delete('key')
+    t.is(deleted, true, 'true when deleted')
+  }
+
+  t.is(cache.globalSize, 3, 'removed globally')
+  t.is(cache.size, 1, 'removed locally')
+  t.is(cache.get('key'), undefined, 'no entry')
+
+  {
+    const deleted = sub.delete('key')
+    t.is(deleted, true, 'true when deleted')
+  }
+
+  t.is(sub.globalSize, 2, 'removed globally')
+  t.is(sub.size, 1, 'removed locally')
+  t.is(sub.get('key'), undefined, 'no entry')
+
+  t.is(
+    sub.delete('nothing here'),
+    false,
+    'false when nothing to delete'
+  )
+})
+
 test('internal structure remains consistent', t => {
   const cache = new GlobalCache({ maxSize: 3 })
 
