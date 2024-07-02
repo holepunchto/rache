@@ -16,8 +16,12 @@ class GlobalCache {
     this._subs = 0
   }
 
-  get size () {
+  get globalSize () {
     return this._array.length
+  }
+
+  get size () {
+    return this._map.size
   }
 
   sub () {
@@ -34,7 +38,7 @@ class GlobalCache {
       return
     }
 
-    if (this.size >= this.maxSize) this._gc()
+    if (this._array.length >= this.maxSize) this._gc()
 
     const entry = new Entry(key, this._array.length, this._map)
     this._array.push(entry)
@@ -84,7 +88,7 @@ class GlobalCache {
   }
 
   _gc () {
-    this._delete(Math.floor(Math.random() * this.size))
+    this._delete(Math.floor(Math.random() * this._array.length))
   }
 
   _delete (index) { // ~constant time
