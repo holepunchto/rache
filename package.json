@@ -19,10 +19,7 @@
   "files": [
     "index.js"
   ],
-  "dependencies": {
-    "hypercore-crypto": "^3.4.2",
-    "hypercore-id-encoding": "^1.3.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "brittle": "^3.5.2",
     "standard": "^17.1.0"
