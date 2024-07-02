@@ -7,9 +7,8 @@ class Entry {
 }
 
 class GlobalCache {
-  constructor ({ maxSize = 65536, prefix = '!', parent = null } = {}) {
+  constructor ({ maxSize = 65536, parent = null } = {}) {
     this.maxSize = parent?.maxSize || maxSize
-    this.prefix = prefix
 
     this._array = parent?._array || []
     this._map = new Map()
@@ -25,13 +24,10 @@ class GlobalCache {
   }
 
   sub () {
-    const prefix = this.prefix + (this._subs++) + '!'
-    return new GlobalCache({ prefix, parent: this })
+    return new GlobalCache({ parent: this })
   }
 
   set (key, value) { // ~constant time
-    key = this.prefix + key
-
     const existing = this._map.get(key)
     if (existing !== undefined) {
       existing.value = value
@@ -46,7 +42,6 @@ class GlobalCache {
   }
 
   delete (key) {
-    key = this.prefix + key
     const existing = this._map.get(key)
     if (existing === undefined) return false
     this._delete(existing.index)
@@ -54,21 +49,18 @@ class GlobalCache {
   }
 
   get (key) {
-    key = this.prefix + key
     const existing = this._map.get(key)
     return existing === undefined ? undefined : existing.value
   }
 
   * [Symbol.iterator] () {
     for (const [key, { value }] of this._map) {
-      yield [key.slice(this.prefix.length), value]
+      yield [key, value]
     }
   }
 
-  * keys () {
-    for (const key of this._map.keys()) {
-      yield key.slice(this.prefix.length)
-    }
+  keys () {
+    return this._map.keys()
   }
 
   * values () {

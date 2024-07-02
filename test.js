@@ -41,7 +41,7 @@ test('subs share same cache, but no key conflicts', t => {
   sub1.set('key', 'value1')
   sub2.set('key', 'value2')
 
-  t.is(cache.size, 2, '2 entries')
+  t.is(cache.globalSize, 2, '2 entries')
   t.is(sub1.get('key'), 'value1', 'sub1 value')
   t.is(sub2.get('key'), 'value2', 'sub2 value')
 
@@ -65,9 +65,7 @@ test('internal structure remains consistent', t => {
 })
 
 function ensureConsistent (cache) {
-  if (cache.size > cache.maxSize || cache.size !== cache._array.length) throw new Error('size')
-
-  if (cache._array.length !== cache._map.size) throw new Error('array/map discrepancy')
+  if (cache.globalSize > cache.maxSize || cache.globalSize !== cache._array.length) throw new Error('size')
 
   for (const entry of cache._array) {
     const mapEntry = entry.map.get(entry.key)
