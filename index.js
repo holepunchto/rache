@@ -12,7 +12,6 @@ class GlobalCache {
 
     this._array = parent?._array || []
     this._map = new Map()
-    this._subs = 0
   }
 
   get globalSize () {
@@ -71,13 +70,18 @@ class GlobalCache {
   }
 
   clear () {
+    // The entries in map linger on in _array,
+    // so on top of clearing the map, we also kill the ref,
+    // so that any gc running later on the old map won't interfere
+    // (in case a new entry was added with the same key as a cleared entry)
+
     this._map.clear()
-    // instead of clearing the map, we kill the ref, so that any gc running on the old map wont interfere
     this._map = new Map()
   }
 
   destroy () {
     this._map = null
+    this._array = null
   }
 
   _gc () {
