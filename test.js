@@ -90,6 +90,30 @@ test('delete', t => {
   )
 })
 
+test('iterator', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('key2', 'value2')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever2')
+
+  {
+    const res = []
+    const expected = [['key', 'value'], ['key2', 'value2']]
+    for (const entry of cache) res.push(entry)
+    t.alike(res, expected, 'iterator entries')
+  }
+
+  {
+    const res = []
+    const expected = [['key', 'value'], ['what2', 'ever2']]
+    for (const entry of sub) res.push(entry)
+    t.alike(res, expected, 'iterator entries')
+  }
+})
+
 test('internal structure remains consistent', t => {
   const cache = new GlobalCache({ maxSize: 3 })
 
