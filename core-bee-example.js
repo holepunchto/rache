@@ -38,7 +38,6 @@ async function main () {
     for (let j = 0; j < nrBlocks; j++) await cores[i].get(j)
     console.log('cache misses core', i, ':', cores[i].cacheMisses, getHeapMb())
   }
-
 }
 
 function getHeapMb () {
