@@ -1,7 +1,6 @@
 class Entry {
-  constructor (key, fork, index, value) {
+  constructor (key, index, value) {
     this.key = key
-    this.fork = fork
     this.index = index
     this.value = value
   }
@@ -24,31 +23,25 @@ class GlobalCache {
     return new GlobalCache({ subName, parent: this })
   }
 
-  set (key, fork, value) { // ~constant time
+  set (key, value) { // ~constant time
     key = `${this.subName}${key}`
 
     const current = this._map.get(key)
     if (current) {
       // Auto updates the array entry too
       current.value = value
-      current.fork = fork // Assumes we only ever care about one fork simulatenously
     } else {
       if (this.size >= this.maxSize) this._gc()
 
-      const entry = new Entry(key, fork, this._array.length, value)
+      const entry = new Entry(key, this._array.length, value)
       this._array.push(entry)
       this._map.set(key, entry)
     }
   }
 
-  get (key, fork) {
+  get (key) {
     key = `${this.subName}${key}`
-    const res = this._map.get(key)
-
-    // We could explicitly gc the old fork, but upstream
-    // should take care of that (calling cache.set on a cache miss)
-    // (and if not, the cache will gc it at some point anyway)
-    return res?.fork === fork ? res.value : undefined
+    return this._map.get(key)?.value
   }
 
   _gc () {

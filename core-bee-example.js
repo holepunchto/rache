@@ -50,12 +50,10 @@ class Hypercore {
     this.nextI = 0
     this.globalCache = globalCache.sub(`${idEnc.normalize(this.discoveryKey)}-core-`)
     this.cacheMisses = 0
-
-    this.fork = 0
   }
 
   async get (i) {
-    return this.globalCache.get(i, this.fork) || await this._get(i)
+    return this.globalCache.get(i) || await this._get(i)
   }
 
   async _get (i) {
@@ -64,13 +62,13 @@ class Hypercore {
     await new Promise(resolve => setTimeout(resolve, 1))
     const res = `value-${i}`
 
-    this.globalCache.set(i, this.fork, res)
+    this.globalCache.set(i, res)
     return res
   }
 
   append () {
     const i = this.nextI++
-    this.globalCache.set(i, this.fork, `value-${i}`)
+    this.globalCache.set(i, `value-${i}`)
   }
 }
 
@@ -92,7 +90,7 @@ class Hyperbee {
     // (it would cache the nodes/keys corresponding to a certain index,
     // but not the entries themselves).
     // This serves only to illustrate how the same core can have multiple global-cache namespaces
-    return this.nodeCache.get(i, this.core.fork) || await this._get(i)
+    return this.nodeCache.get(i) || await this._get(i)
   }
 
   async _get (i) {
@@ -105,12 +103,12 @@ class Hyperbee {
 
     // Note: not at all how hyperbee caching works (see comment above for get (i))
     // Note: we might set the same value multiple times if _get called in parallel with same i (but that's no big deal)
-    this.nodeCache.set(i, this.core.fork, res)
+    this.nodeCache.set(i, res)
     return res
   }
 
   put (i) {
-    this.nodeCache.set(i, this.core.fork, { key: i, value: `value-${i}`, seq: this.nextI++ })
+    this.nodeCache.set(i, { key: i, value: `value-${i}`, seq: this.nextI++ })
   }
 }
 

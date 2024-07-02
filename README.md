@@ -2,11 +2,9 @@
 
 A global cache used in the Hypercore ecosystem.
 
-It randomly evicts a proportion of its entries when it's full.
+It randomly evicts an entry when it is full.
 
-`get` and `set` operations take constant time.
-
-The garbage collection takes linear time in function of the amount of items to clear.
+eviction and `get` and `set` operations take constant time.
 
 ## Run example
 
@@ -26,7 +24,6 @@ The main assumption is that the combination of these fields yields a unique cach
 
 - discovery key
 - cache name (initially 'core', 'bee-keys' and 'bee-nodes' )
-- fork
 - block nr
 
 Each object is responsible for registering itself with the passed-in global cache, providing its discovery key and the cache name. For example, a hyperbee registers 2 caches:
@@ -37,11 +34,11 @@ this.keyCache = globalCache.sub(`${idEnc.normalize(this.discoveryKey)}-bee-key-`
 
 ```
 
-The fork and blockNr are passed in to the cache API calls:
+The blockNr is passed in to the cache API calls:
 
 ```
-cache.set(key, fork, value) // Set the key at the given fork to that value
-cache.get(key, fork) // Returns the value if it was cached for that fork
+cache.set(key, value)
+cache.get(key) // Returns the value if it was cached
 ```
 
 This is simpler than special-casing fork changes outside the cache.
