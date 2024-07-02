@@ -44,7 +44,8 @@ class GlobalCache {
   delete (key) {
     const existing = this._map.get(key)
     if (existing === undefined) return false
-    this._delete(existing.index)
+
+    this._delete(existing.entry.index)
     return true
   }
 
