@@ -140,6 +140,53 @@ test('values()', t => {
   t.alike([...sub.values()], ['value', 'ever2'], 'expected values')
 })
 
+test('clear()', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('key2', 'value2')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever2')
+
+  sub.clear()
+  t.is(sub.size, 0, 'cleared')
+
+  // DEVNOTE: this assertion documents the current behaviour,
+  // that cleared entries linger on in the _array. But if this
+  // test ever fails because we no longer have those entries linger
+  // then it's fine to modify this assertion
+  t.is(sub.globalSize, 4, 'elements still exist in the array')
+
+  sub.set('key', 'value') // Reset it
+  t.is(sub.globalSize, 5, 'old and new entry exist simultaneously')
+
+  sub.delete('key')
+  t.is(sub.globalSize, 4, 'old entry unaffected by new entry deletion')
+})
+
+test('destroy()', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('key2', 'value2')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever2')
+
+  sub.destroy()
+  t.is(sub._array, null, 'null internal array')
+  t.is(sub._map, null, 'null internal map')
+  t.is(cache._array !== null, true, 'no null for cache')
+  t.is(cache._map !== null, true, 'no null for cache')
+
+  // DEVNOTE: this assertion documents the current behaviour,
+  // that destroyed entries linger on in the _array. But if this
+  // test ever fails because we no longer have those entries linger
+  // then it's fine to modify this assertion
+  t.is(cache.globalSize, 4, 'not yet removed from internal array')
+})
+
 test('internal structure remains consistent', t => {
   const cache = new GlobalCache({ maxSize: 3 })
 
