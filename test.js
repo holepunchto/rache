@@ -90,6 +90,56 @@ test('delete', t => {
   )
 })
 
+test('iterator', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('key2', 'value2')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever2')
+
+  {
+    const res = []
+    const expected = [['key', 'value'], ['key2', 'value2']]
+    for (const entry of cache) res.push(entry)
+    t.alike(res, expected, 'iterator entries')
+  }
+
+  {
+    const res = []
+    const expected = [['key', 'value'], ['what2', 'ever2']]
+    for (const entry of sub) res.push(entry)
+    t.alike(res, expected, 'iterator entries')
+  }
+})
+
+test('keys()', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('key2', 'value2')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever2')
+
+  t.alike([...cache.keys()], ['key', 'key2'], 'expected keys')
+  t.alike([...sub.keys()], ['key', 'what2'], 'expected keys')
+})
+
+test('values()', t => {
+  const cache = new GlobalCache()
+  const sub = cache.sub()
+
+  cache.set('key', 'value')
+  cache.set('key2', 'value2')
+  sub.set('key', 'value')
+  sub.set('what2', 'ever2')
+
+  t.alike([...cache.values()], ['value', 'value2'], 'expected values')
+  t.alike([...sub.values()], ['value', 'ever2'], 'expected values')
+})
+
 test('internal structure remains consistent', t => {
   const cache = new GlobalCache({ maxSize: 3 })
 
