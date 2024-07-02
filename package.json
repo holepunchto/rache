@@ -1,21 +1,21 @@
 {
-  "name": "hypercore-cache",
+  "name": "rache",
   "version": "0.0.0",
-  "description": "Global cache for hypercore blocks",
+  "description": "Random-eviction cache",
   "main": "index.js",
   "scripts": {
     "test": "standard && brittle test.js --coverage"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/holepunchto/hypercore-cache.git"
+    "url": "git+https://github.com/holepunchto/rache.git"
   },
   "author": "Holepunch",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/holepunchto/hypercore-cache/issues"
+    "url": "https://github.com/holepunchto/rache/issues"
   },
-  "homepage": "https://github.com/holepunchto/hypercore-cache#readme",
+  "homepage": "https://github.com/holepunchto/rache#readme",
   "dependencies": {
     "hypercore-crypto": "^3.4.2",
     "hypercore-id-encoding": "^1.3.0"
