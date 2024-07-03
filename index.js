@@ -22,7 +22,7 @@ class Rache {
   }
 
   static from (cache) {
-    return cache ? new Rache({ parent: cache }) : new Rache()
+    return cache ? new this({ parent: cache }) : new this()
   }
 
   get globalSize () {
