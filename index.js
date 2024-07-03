@@ -1,8 +1,15 @@
-class Entry {
+class CacheEntry {
   constructor (key, index, map) {
     this.key = key
     this.index = index
     this.map = map
+  }
+}
+
+class CacheValue {
+  constructor (entry, value) {
+    this.entry = entry
+    this.value = value
   }
 }
 
@@ -35,9 +42,10 @@ class GlobalCache {
 
     if (this._array.length >= this.maxSize) this._gc()
 
-    const entry = new Entry(key, this._array.length, this._map)
+    const entry = new CacheEntry(key, this._array.length, this._map)
     this._array.push(entry)
-    this._map.set(key, { entry, value })
+    const cacheValue = new CacheValue(entry, value)
+    this._map.set(key, cacheValue)
   }
 
   delete (key) {
