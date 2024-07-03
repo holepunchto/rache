@@ -13,12 +13,16 @@ class CacheValue {
   }
 }
 
-class GlobalCache {
+class Rache {
   constructor ({ maxSize = 65536, parent = null } = {}) {
     this.maxSize = parent?.maxSize || maxSize
 
     this._array = parent?._array || []
     this._map = new Map()
+  }
+
+  static from (cache) {
+    return cache ? new Rache({ parent: cache }) : new Rache()
   }
 
   get globalSize () {
@@ -30,7 +34,7 @@ class GlobalCache {
   }
 
   sub () {
-    return new GlobalCache({ parent: this })
+    return new Rache({ parent: this })
   }
 
   set (key, value) { // ~constant time
@@ -112,4 +116,4 @@ class GlobalCache {
   }
 }
 
-module.exports = GlobalCache
+module.exports = Rache

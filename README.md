@@ -49,6 +49,15 @@ Creates a new cache.
 
 Creates a new cache which shares the global memory limit with the original cache.
 
+#### `const aCache = Rache.from(cache?)`
+
+Creates a new rache instance.
+
+If an existing cache is passed in, it will create a sub-cache (equivalent to `aCache = cache.sub()`).
+
+Otherwise (if no `cache` or a falsy cache is passed in), it will create a new cache (equivalent to `aCache = new Rache()`)
+
+
 #### `cache.globalSize`
 
 The amount of entries across all caches

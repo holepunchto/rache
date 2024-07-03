@@ -1,14 +1,14 @@
 const test = require('brittle')
-const GlobalCache = require('.')
+const Rache = require('.')
 
 test('basic set and get', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   cache.set('key', 'value')
   t.is(cache.get('key'), 'value', 'correct value')
 })
 
 test('set of existing value', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   cache.set('key', 'value')
   t.is(cache.get('key'), 'value', 'sanity check')
 
@@ -17,8 +17,17 @@ test('set of existing value', t => {
   t.is(cache.size, 1, 'correct size')
 })
 
+test('creating with Rache.from', t => {
+  const cache = Rache.from()
+  t.pass('can create new cache with Rache.from')
+
+  const sub = Rache.from(cache)
+  sub.set('key', 'value')
+  t.is(cache.globalSize, 1, 'from links back to the global cache')
+})
+
 test('gc triggers when full and removes 1 entry', t => {
-  const cache = new GlobalCache({ maxSize: 3 })
+  const cache = new Rache({ maxSize: 3 })
   cache.set('key', 'value')
   cache.set('key2', 'value2')
   cache.set('key3', 'value3')
@@ -34,7 +43,7 @@ test('gc triggers when full and removes 1 entry', t => {
 })
 
 test('subs share same cache, but no key conflicts', t => {
-  const cache = new GlobalCache({ maxSize: 3 })
+  const cache = new Rache({ maxSize: 3 })
   const sub1 = cache.sub()
   const sub2 = cache.sub()
 
@@ -54,7 +63,7 @@ test('subs share same cache, but no key conflicts', t => {
 })
 
 test('delete', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   const sub = cache.sub()
 
   cache.set('key', 'value')
@@ -91,7 +100,7 @@ test('delete', t => {
 })
 
 test('iterator', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   const sub = cache.sub()
 
   cache.set('key', 'value')
@@ -115,7 +124,7 @@ test('iterator', t => {
 })
 
 test('keys()', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   const sub = cache.sub()
 
   cache.set('key', 'value')
@@ -128,7 +137,7 @@ test('keys()', t => {
 })
 
 test('values()', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   const sub = cache.sub()
 
   cache.set('key', 'value')
@@ -141,7 +150,7 @@ test('values()', t => {
 })
 
 test('clear()', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   const sub = cache.sub()
 
   cache.set('key', 'value')
@@ -166,7 +175,7 @@ test('clear()', t => {
 })
 
 test('destroy()', t => {
-  const cache = new GlobalCache()
+  const cache = new Rache()
   const sub = cache.sub()
 
   cache.set('key', 'value')
@@ -188,7 +197,7 @@ test('destroy()', t => {
 })
 
 test('internal structure remains consistent', t => {
-  const cache = new GlobalCache({ maxSize: 3 })
+  const cache = new Rache({ maxSize: 3 })
 
   for (let i = 0; i < 1000; i++) {
     cache.set(`key${i}`, `value${i}`)
