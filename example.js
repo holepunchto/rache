@@ -12,9 +12,9 @@ cache3.set('some', 'thing')
 console.log('cached:', cache.get('key')) // 'value'
 
 // But they share the same global size
-console.log(cache.globalSize, 'of', cache.globalSize) // 3 of 3
+console.log(cache.globalSize, 'of', cache.maxSize) // 3 of 3
 
 cache.set('key2', 'another value')
 // The cache was full, so one of the existing 3 entries got evicted
 
-console.log(cache.globalSize, 'of', cache.globalSize) // 3 of 3
+console.log(cache.globalSize, 'of', cache.maxSize) // 3 of 3
