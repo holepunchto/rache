@@ -57,7 +57,6 @@ If an existing cache is passed in, it will create a sub-cache (equivalent to `aC
 
 Otherwise (if no `cache` or a falsy value is passed in), it will create a new cache (equivalent to `aCache = new Rache()`).
 
-
 #### `cache.globalSize`
 
 The current amount of entries across all caches.

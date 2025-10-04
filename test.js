@@ -1,13 +1,13 @@
 const test = require('brittle')
 const Rache = require('.')
 
-test('basic set and get', t => {
+test('basic set and get', (t) => {
   const cache = new Rache()
   cache.set('key', 'value')
   t.is(cache.get('key'), 'value', 'correct value')
 })
 
-test('set of existing value', t => {
+test('set of existing value', (t) => {
   const cache = new Rache()
   cache.set('key', 'value')
   t.is(cache.get('key'), 'value', 'sanity check')
@@ -17,7 +17,7 @@ test('set of existing value', t => {
   t.is(cache.size, 1, 'correct size')
 })
 
-test('creating with Rache.from', t => {
+test('creating with Rache.from', (t) => {
   const cache = Rache.from()
   t.pass('can create new cache with Rache.from')
 
@@ -26,7 +26,7 @@ test('creating with Rache.from', t => {
   t.is(cache.globalSize, 1, 'from links back to the global cache')
 })
 
-test('gc triggers when full and removes 1 entry', t => {
+test('gc triggers when full and removes 1 entry', (t) => {
   const cache = new Rache({ maxSize: 3 })
   cache.set('key', 'value')
   cache.set('key2', 'value2')
@@ -38,11 +38,11 @@ test('gc triggers when full and removes 1 entry', t => {
   t.is(cache.size, 3, 'cache did not grow past maxSize')
   const values = [cache.get('key'), cache.get('key2'), cache.get('key3')]
 
-  const nrMisses = values.filter(v => v === undefined).length
+  const nrMisses = values.filter((v) => v === undefined).length
   t.is(nrMisses, 1, 'exactly 1 old item got removed from the cache')
 })
 
-test('subs share same cache, but no key conflicts', t => {
+test('subs share same cache, but no key conflicts', (t) => {
   const cache = new Rache({ maxSize: 3 })
   const sub1 = cache.sub()
   const sub2 = cache.sub()
@@ -57,12 +57,17 @@ test('subs share same cache, but no key conflicts', t => {
   sub1.set('key2', 'value1')
   sub1.set('key3', 'value1')
 
-  const entries = [sub1.get('key'), sub2.get('key'), sub1.get('key2'), sub1.get('key3')]
-  const nrMisses = entries.filter(e => e === undefined).length
+  const entries = [
+    sub1.get('key'),
+    sub2.get('key'),
+    sub1.get('key2'),
+    sub1.get('key3')
+  ]
+  const nrMisses = entries.filter((e) => e === undefined).length
   t.is(nrMisses, 1, '1 entry got cleared from the global cache')
 })
 
-test('delete', t => {
+test('delete', (t) => {
   const cache = new Rache()
   const sub = cache.sub()
 
@@ -92,14 +97,10 @@ test('delete', t => {
   t.is(sub.size, 1, 'removed locally')
   t.is(sub.get('key'), undefined, 'no entry')
 
-  t.is(
-    sub.delete('nothing here'),
-    false,
-    'false when nothing to delete'
-  )
+  t.is(sub.delete('nothing here'), false, 'false when nothing to delete')
 })
 
-test('iterator', t => {
+test('iterator', (t) => {
   const cache = new Rache()
   const sub = cache.sub()
 
@@ -110,20 +111,26 @@ test('iterator', t => {
 
   {
     const res = []
-    const expected = [['key', 'value'], ['key2', 'value2']]
+    const expected = [
+      ['key', 'value'],
+      ['key2', 'value2']
+    ]
     for (const entry of cache) res.push(entry)
     t.alike(res, expected, 'iterator entries')
   }
 
   {
     const res = []
-    const expected = [['key', 'value'], ['what2', 'ever2']]
+    const expected = [
+      ['key', 'value'],
+      ['what2', 'ever2']
+    ]
     for (const entry of sub) res.push(entry)
     t.alike(res, expected, 'iterator entries')
   }
 })
 
-test('keys()', t => {
+test('keys()', (t) => {
   const cache = new Rache()
   const sub = cache.sub()
 
@@ -136,7 +143,7 @@ test('keys()', t => {
   t.alike([...sub.keys()], ['key', 'what2'], 'expected keys')
 })
 
-test('values()', t => {
+test('values()', (t) => {
   const cache = new Rache()
   const sub = cache.sub()
 
@@ -149,7 +156,7 @@ test('values()', t => {
   t.alike([...sub.values()], ['value', 'ever2'], 'expected values')
 })
 
-test('clear()', t => {
+test('clear()', (t) => {
   const cache = new Rache()
   const sub = cache.sub()
 
@@ -174,7 +181,7 @@ test('clear()', t => {
   t.is(sub.globalSize, 4, 'old entry unaffected by new entry deletion')
 })
 
-test('destroy()', t => {
+test('destroy()', (t) => {
   const cache = new Rache()
   const sub = cache.sub()
 
@@ -196,7 +203,7 @@ test('destroy()', t => {
   t.is(cache.globalSize, 4, 'not yet removed from internal array')
 })
 
-test('internal structure remains consistent', t => {
+test('internal structure remains consistent', (t) => {
   const cache = new Rache({ maxSize: 3 })
 
   for (let i = 0; i < 1000; i++) {
@@ -207,16 +214,22 @@ test('internal structure remains consistent', t => {
   }
 })
 
-function ensureConsistent (cache) {
-  if (cache.globalSize > cache.maxSize || cache.globalSize !== cache._array.length) throw new Error('size')
+function ensureConsistent(cache) {
+  if (
+    cache.globalSize > cache.maxSize ||
+    cache.globalSize !== cache._array.length
+  )
+    throw new Error('size')
 
   for (const entry of cache._array) {
     const mapEntry = entry.map.get(entry.key)
-    if (mapEntry.entry !== entry) throw new Error('different entry obj in map/cache')
+    if (mapEntry.entry !== entry)
+      throw new Error('different entry obj in map/cache')
   }
 
   for (const { entry } of cache._map.values()) {
     const arrayEntry = cache._array[entry.index]
-    if (arrayEntry !== entry) throw new Error('different entry obj in map/cache')
+    if (arrayEntry !== entry)
+      throw new Error('different entry obj in map/cache')
   }
 }
