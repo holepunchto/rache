@@ -103,8 +103,7 @@ class Rache {
 
   _delete(index) {
     // ~constant time
-    if (index >= this._array.length)
-      throw new Error('Cannot delete unused index (logic bug?)')
+    if (index >= this._array.length) throw new Error('Cannot delete unused index (logic bug?)')
 
     const head = this._array.pop()
     let removed = head

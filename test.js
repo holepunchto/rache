@@ -57,12 +57,7 @@ test('subs share same cache, but no key conflicts', (t) => {
   sub1.set('key2', 'value1')
   sub1.set('key3', 'value1')
 
-  const entries = [
-    sub1.get('key'),
-    sub2.get('key'),
-    sub1.get('key2'),
-    sub1.get('key3')
-  ]
+  const entries = [sub1.get('key'), sub2.get('key'), sub1.get('key2'), sub1.get('key3')]
   const nrMisses = entries.filter((e) => e === undefined).length
   t.is(nrMisses, 1, '1 entry got cleared from the global cache')
 })
@@ -215,21 +210,16 @@ test('internal structure remains consistent', (t) => {
 })
 
 function ensureConsistent(cache) {
-  if (
-    cache.globalSize > cache.maxSize ||
-    cache.globalSize !== cache._array.length
-  )
+  if (cache.globalSize > cache.maxSize || cache.globalSize !== cache._array.length)
     throw new Error('size')
 
   for (const entry of cache._array) {
     const mapEntry = entry.map.get(entry.key)
-    if (mapEntry.entry !== entry)
-      throw new Error('different entry obj in map/cache')
+    if (mapEntry.entry !== entry) throw new Error('different entry obj in map/cache')
   }
 
   for (const { entry } of cache._map.values()) {
     const arrayEntry = cache._array[entry.index]
-    if (arrayEntry !== entry)
-      throw new Error('different entry obj in map/cache')
+    if (arrayEntry !== entry) throw new Error('different entry obj in map/cache')
   }
 }
