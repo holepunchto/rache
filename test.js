@@ -210,8 +210,9 @@ test('internal structure remains consistent', (t) => {
 })
 
 function ensureConsistent(cache) {
-  if (cache.globalSize > cache.maxSize || cache.globalSize !== cache._array.length)
+  if (cache.globalSize > cache.maxSize || cache.globalSize !== cache._array.length) {
     throw new Error('size')
+  }
 
   for (const entry of cache._array) {
     const mapEntry = entry.map.get(entry.key)
