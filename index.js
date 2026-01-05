@@ -1,5 +1,5 @@
 class CacheEntry {
-  constructor (key, index, map) {
+  constructor(key, index, map) {
     this.key = key
     this.index = index
     this.map = map
@@ -7,37 +7,38 @@ class CacheEntry {
 }
 
 class CacheValue {
-  constructor (entry, value) {
+  constructor(entry, value) {
     this.entry = entry
     this.value = value
   }
 }
 
 class Rache {
-  constructor ({ maxSize = 65536, parent = null } = {}) {
+  constructor({ maxSize = 65536, parent = null } = {}) {
     this.maxSize = parent?.maxSize || maxSize
 
     this._array = parent?._array || []
     this._map = new Map()
   }
 
-  static from (cache) {
+  static from(cache) {
     return cache ? new this({ parent: cache }) : new this()
   }
 
-  get globalSize () {
+  get globalSize() {
     return this._array.length
   }
 
-  get size () {
+  get size() {
     return this._map.size
   }
 
-  sub () {
+  sub() {
     return new Rache({ parent: this })
   }
 
-  set (key, value) { // ~constant time
+  set(key, value) {
+    // ~constant time
     const existing = this._map.get(key)
     if (existing !== undefined) {
       existing.value = value
@@ -52,7 +53,7 @@ class Rache {
     this._map.set(key, cacheValue)
   }
 
-  delete (key) {
+  delete(key) {
     const existing = this._map.get(key)
     if (existing === undefined) return false
 
@@ -60,28 +61,28 @@ class Rache {
     return true
   }
 
-  get (key) {
+  get(key) {
     const existing = this._map.get(key)
     return existing === undefined ? undefined : existing.value
   }
 
-  * [Symbol.iterator] () {
+  *[Symbol.iterator]() {
     for (const [key, { value }] of this._map) {
       yield [key, value]
     }
   }
 
-  keys () {
+  keys() {
     return this._map.keys()
   }
 
-  * values () {
+  *values() {
     for (const { value } of this._map.values()) {
       yield value
     }
   }
 
-  clear () {
+  clear() {
     // The entries in map linger on in _array,
     // so on top of clearing the map, we also kill the ref,
     // so that any gc running later on the old map won't interfere
@@ -91,16 +92,17 @@ class Rache {
     this._map = new Map()
   }
 
-  destroy () {
+  destroy() {
     this._map = null
     this._array = null
   }
 
-  _gc () {
+  _gc() {
     this._delete(Math.floor(Math.random() * this._array.length))
   }
 
-  _delete (index) { // ~constant time
+  _delete(index) {
+    // ~constant time
     if (index >= this._array.length) throw new Error('Cannot delete unused index (logic bug?)')
 
     const head = this._array.pop()

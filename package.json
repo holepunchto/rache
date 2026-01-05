@@ -4,7 +4,11 @@
   "description": "Random-eviction cache",
   "main": "index.js",
   "scripts": {
-    "test": "standard && brittle test.js --coverage"
+    "format": "prettier --write .",
+    "lint": "prettier --check . && lunte",
+    "test": "npm run test:node && npm run test:bare",
+    "test:node": "brittle-node test.js --coverage",
+    "test:bare": "brittle-bare test.js"
   },
   "repository": {
     "type": "git",
@@ -19,9 +23,10 @@
   "files": [
     "index.js"
   ],
-  "dependencies": {},
   "devDependencies": {
     "brittle": "^3.5.2",
-    "standard": "^17.1.0"
+    "lunte": "^1.0.0",
+    "prettier": "^3.6.2",
+    "prettier-config-holepunch": "^2.0.0"
   }
 }
